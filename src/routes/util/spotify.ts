@@ -8,7 +8,6 @@ export type AuthorizeResult =
     | { ok: false, error: SpotifyAuthenticationErrorResponse }
 
 async function authorize(code: string): Promise<AuthorizeResult> {
-    console.log(config)
     const authorization = Buffer.from(`${config.spotify.id}:${config.spotify.secret}`).toString("base64")
     const response = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
