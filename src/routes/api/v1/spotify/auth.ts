@@ -5,8 +5,8 @@ interface AuthQuery {
     code: string
 }
 
-export async function spotifyAuthRoute(request: FastifyRequest<{ Querystring: AuthQuery }>) {
-    const { code } = request.query
+export async function spotifyAuthRoute(request: FastifyRequest<{ Body: AuthQuery }>) {
+    const { code } = request.body
     const result = await authorize(code)
 
     if (result.ok) {

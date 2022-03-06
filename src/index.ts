@@ -1,7 +1,7 @@
 import Fastify, { FastifyInstance } from "fastify"
 import { buildAPIRoutes } from "./routes/routes"
 
-const server: FastifyInstance = Fastify()
+const server: FastifyInstance = Fastify({ logger: true })
 server.register(buildAPIRoutes)
 server.listen(8080, (err, address) => {
     if (err) {
