@@ -1,7 +1,7 @@
 import fetch from "node-fetch"
-import { SpotifyAuthenticationErrorResponse, SpotifyTokenResponse } from "../../interfaces/SpotifyResponse.interface"
+import { SpotifyAuthenticationErrorResponse, SpotifyTokenResponse } from "../interfaces/SpotifyResponse.interface"
 import { URLSearchParams } from "url"
-import config from "./config"
+import config from "../util/config"
 
 export type AuthorizeResult =
     | { ok: true, value: SpotifyTokenResponse }

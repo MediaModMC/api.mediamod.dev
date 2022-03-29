@@ -1,5 +1,5 @@
 import { FastifyRequest } from "fastify"
-import { authorize } from "../../../util/spotify"
+import { authorize } from "../../../../lib/spotify"
 
 interface AuthQuery {
     code: string

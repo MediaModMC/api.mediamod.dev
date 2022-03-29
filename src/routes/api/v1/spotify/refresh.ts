@@ -1,5 +1,5 @@
 import { FastifyRequest } from "fastify"
-import { refresh } from "../../../util/spotify"
+import { refresh } from "../../../../lib/spotify"
 
 interface AuthQuery {
     refresh_token: string
