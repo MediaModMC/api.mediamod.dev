@@ -18,6 +18,6 @@ RUN yarn build
 
 COPY --chown=nodejs:nodejs . .
 
-EXPOSE 8080
+EXPOSE 3000
 
 CMD [ "node", "./dist/index.js" ]
