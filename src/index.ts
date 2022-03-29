@@ -1,13 +1,12 @@
 import Fastify, { FastifyInstance } from "fastify"
 import { buildAPIRoutes } from "./routes/routes"
+import environment from "./util/config"
 
 const server: FastifyInstance = Fastify({ logger: true })
 server.register(buildAPIRoutes)
-server.listen(8080, (err, address) => {
+server.listen(environment.port, (err) => {
     if (err) {
         console.error(err)
         process.exit(0)
     }
-
-    console.log(`Server listening at ${address}`)
 })
