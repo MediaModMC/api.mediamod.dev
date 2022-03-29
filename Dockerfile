@@ -12,9 +12,9 @@ ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 ENV NPM_CONFIG_LOGLEVEL=warn
 
-COPY package*.json ./
-COPY yarn.lock ./
+COPY . ./
 RUN yarn
+RUN yarn build
 
 COPY --chown=nodejs:nodejs . .
 
