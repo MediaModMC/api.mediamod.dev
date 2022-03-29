@@ -48,8 +48,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
-      - name: Sign the published Docker image
-        env:
-          COSIGN_EXPERIMENTAL: "true"
-        run: cosign sign ghcr.io/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }}
