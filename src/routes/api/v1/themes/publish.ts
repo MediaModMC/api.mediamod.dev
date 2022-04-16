@@ -17,5 +17,5 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
         return { ok: false, message: result.error }
     }
 
-    return { ok: true }
+    return { ok: true, theme_id: "123456" }
 }

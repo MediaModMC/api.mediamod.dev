@@ -1,5 +1,4 @@
 export interface ThemeData {
-    version: string
     name: string
     colors: ThemeColors
 }
