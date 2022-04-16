@@ -9,10 +9,10 @@ export async function sessionHasJoined(username: string, serverIdHash: string): 
         { method: "GET" }
     )
 
-    const json = await response.json()
     if (response.status != 200) {
         return { error: "Invalid username and/or server hash", ok: false }
     }
 
+    const json = await response.json()
     return { value: json as SessionHasJoinedResponse, ok: true }
 }
