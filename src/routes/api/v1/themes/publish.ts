@@ -1,12 +1,12 @@
 import { FastifyRequest } from "fastify"
 import { sessionHasJoined } from "../../../../lib/mojang"
 import { getServerIdHash } from "../../../../lib/hash"
+import { ThemeData } from "../../../../interfaces/ThemeData.interface"
 
 interface PublishQuery {
     username: string
     sharedSecret: string
-
-    // TODO: Theme data
+    theme: ThemeData
 }
 
 export async function themesPublishRoute(request: FastifyRequest<{ Body: PublishQuery }>) {
