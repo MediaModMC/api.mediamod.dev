@@ -1,5 +1,12 @@
 import { FastifyInstance, RegisterOptions } from "fastify"
-import { modVersionsRoute, spotifyAuthRoute, spotifyRefreshRoute, themesListRoute, themesPublishRoute } from "./api/v1"
+import {
+    modVersionsRoute,
+    spotifyAuthRoute,
+    spotifyRefreshRoute,
+    themesListRoute,
+    themesPublishRoute,
+    themesIdRoute
+} from "./api/v1"
 
 export function buildAPIRoutes(server: FastifyInstance, options: RegisterOptions, next?: () => void): void {
     server.post("/api/v1/spotify/auth", spotifyAuthRoute)
@@ -20,6 +27,8 @@ export function buildAPIRoutes(server: FastifyInstance, options: RegisterOptions
         },
         themesPublishRoute
     )
+
+    server.get("/api/v1/theme/:id", themesIdRoute)
 
     if (next) next()
 }
