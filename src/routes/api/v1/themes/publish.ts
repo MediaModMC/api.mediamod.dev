@@ -3,12 +3,15 @@ import { sessionHasJoined } from "../../../../lib/mojang"
 import { getServerIdHash } from "../../../../lib/hash"
 import { ThemeData } from "../../../../interfaces/ThemeData.interface"
 import { ThemeModel } from "../../../../database/themes/themes.model"
+import Filter from "badwords-filter"
 
 interface PublishQuery {
     username: string
     sharedSecret: string
     theme: ThemeData
 }
+
+const filter = new Filter()
 
 export async function themesPublishRoute(request: FastifyRequest<{ Body: PublishQuery }>) {
     const serverIdHash = getServerIdHash(request.body.sharedSecret)
@@ -26,6 +29,10 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
 
     if (existingTheme) {
         return { ok: false, message: "You've already uploaded this theme!" }
+    }
+
+    if (filter.isUnclean(request.body.theme.name)) {
+        return { ok: false, message: "Invalid theme name!" }
     }
 
     const entry = await ThemeModel.create({
