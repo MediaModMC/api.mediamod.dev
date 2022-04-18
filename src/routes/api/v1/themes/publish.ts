@@ -2,8 +2,9 @@ import { FastifyRequest } from "fastify"
 import { sessionHasJoined } from "../../../../lib/mojang"
 import { getServerIdHash } from "../../../../lib/hash"
 import { ThemeData } from "../../../../interfaces/ThemeData.interface"
-import { ThemeModel } from "../../../../database/themes/themes.model"
 import Filter from "badwords-filter"
+import prisma from "../../../../util/prisma"
+import { randomBytes } from "crypto"
 
 interface PublishQuery {
     username: string
@@ -21,10 +22,12 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
         return { ok: false, message: result.error }
     }
 
-    const existingTheme = await ThemeModel.findOne({
-        author: request.body.username,
-        name: request.body.theme.name,
-        colors: request.body.theme.colors
+    const existingTheme = await prisma.theme.findFirst({
+        where: {
+            author: request.body.username,
+            name: request.body.theme.name,
+            colors: request.body.theme.colors
+        }
     })
 
     if (existingTheme) {
@@ -35,12 +38,15 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
         return { ok: false, message: "Invalid theme name!" }
     }
 
-    const entry = await ThemeModel.create({
-        author: request.body.username,
-        name: request.body.theme.name,
-        colors: request.body.theme.colors,
-        upload_date: Date.now()
+    const id = randomBytes(6).toString("hex")
+    await prisma.theme.create({
+        data: {
+            id: id,
+            author: request.body.username,
+            name: request.body.theme.name,
+            colors: { create: request.body.theme.colors }
+        }
     })
 
-    return { ok: true, theme_id: entry.id }
+    return { ok: true, theme_id: id }
 }

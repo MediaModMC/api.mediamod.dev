@@ -15,6 +15,7 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 COPY . ./
 RUN yarn
 RUN yarn build
+RUN yarn prisma generate
 
 COPY --chown=nodejs:nodejs . .
 

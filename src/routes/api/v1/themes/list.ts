@@ -1,15 +1,22 @@
-import { ThemeModel } from "../../../../database/themes/themes.model"
+import prisma from "../../../../util/prisma"
 
 export async function themesListRoute() {
-    const themes = await ThemeModel.find().exec()
+    const themes = await prisma.theme.findMany({
+        include: {
+            colors: {
+                select: {
+                    background: true,
+                    progress_bar: true,
+                    progress_bar_background: true,
+                    progress_bar_text: true,
+                    text: true
+                }
+            }
+        }
+    })
+
     return {
         ok: true,
-        themes: themes.map((it) => ({
-            id: it._id,
-            name: it.name,
-            author: it.author,
-            upload_date: it.upload_date,
-            colors: it.colors
-        }))
+        themes: themes
     }
 }

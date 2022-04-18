@@ -1,0 +1,28 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model ThemeColors {
+    themeId                 String @id @map("theme_id")
+    theme                   Theme  @relation(fields: [themeId], references: [id])
+    background              String
+    progress_bar            String
+    progress_bar_background String
+    progress_bar_text       String
+    text                    String
+}
+
+model Theme {
+    id          String       @id
+    author      String
+    name        String
+    upload_date DateTime     @default(now()) @db.Timestamp()
+    colors      ThemeColors?
+
+    @@map("themes")
+}
