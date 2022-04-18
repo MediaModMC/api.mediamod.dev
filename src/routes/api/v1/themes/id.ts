@@ -9,6 +9,12 @@ export async function themesIdRoute(request: FastifyRequest<{ Params: Params }>)
     const theme = await prisma.theme.findFirst({
         where: { id: request.params.id },
         include: {
+            author: {
+                select: {
+                    name: true,
+                    id: true
+                }
+            },
             colors: {
                 select: {
                     background: true,
@@ -24,9 +30,6 @@ export async function themesIdRoute(request: FastifyRequest<{ Params: Params }>)
     if (!theme) return { ok: false, message: "Unknown theme!" }
     return {
         ok: true,
-        theme: {
-            name: theme.name,
-            colors: theme.colors
-        }
+        theme
     }
 }

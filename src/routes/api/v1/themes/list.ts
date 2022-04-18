@@ -3,6 +3,12 @@ import prisma from "../../../../util/prisma"
 export async function themesListRoute() {
     const themes = await prisma.theme.findMany({
         include: {
+            author: {
+                select: {
+                    name: true,
+                    id: true
+                }
+            },
             colors: {
                 select: {
                     background: true,
