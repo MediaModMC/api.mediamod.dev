@@ -5,7 +5,8 @@ import {
     spotifyRefreshRoute,
     themesListRoute,
     themesPublishRoute,
-    themesIdRoute
+    themesIdRoute,
+    banRoute
 } from "./api/v1"
 
 export function buildAPIRoutes(server: FastifyInstance, options: RegisterOptions, next?: () => void): void {
@@ -29,6 +30,7 @@ export function buildAPIRoutes(server: FastifyInstance, options: RegisterOptions
     )
 
     server.get("/api/v1/theme/:id", themesIdRoute)
+    // server.get("/api/v1/admin/ban/:uuid", banRoute)
 
     if (next) next()
 }

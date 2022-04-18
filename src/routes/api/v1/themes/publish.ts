@@ -8,6 +8,7 @@ import { randomBytes } from "crypto"
 
 interface PublishQuery {
     username: string
+    uuid: string
     sharedSecret: string
     theme: ThemeData
 }
@@ -22,9 +23,14 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
         return { ok: false, message: result.error }
     }
 
+    const user = await prisma.user.findFirst({ where: { id: request.body.uuid } })
+    if (user?.banned) {
+        return { ok: false, message: "Please try again later!" }
+    }
+
     const existingTheme = await prisma.theme.findFirst({
         where: {
-            author: request.body.username,
+            author: { id: request.body.uuid },
             name: request.body.theme.name,
             colors: request.body.theme.colors
         }
@@ -42,7 +48,12 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
     await prisma.theme.create({
         data: {
             id: id,
-            author: request.body.username,
+            author: {
+                connectOrCreate: {
+                    create: { id: request.body.uuid, name: request.body.username },
+                    where: { id: request.body.uuid }
+                }
+            },
             name: request.body.theme.name,
             colors: { create: request.body.theme.colors }
         }

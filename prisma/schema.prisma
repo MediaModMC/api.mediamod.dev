@@ -19,10 +19,18 @@ model ThemeColors {
 
 model Theme {
     id          String       @id
-    author      String
+    author      User         @relation(fields: [userId], references: [id])
     name        String
     upload_date DateTime     @default(now()) @db.Timestamp()
     colors      ThemeColors?
 
+    userId String @db.Uuid
     @@map("themes")
+}
+
+model User {
+    name   String
+    id     String  @id @db.Uuid
+    banned Boolean @default(false)
+    themes Theme[]
 }
