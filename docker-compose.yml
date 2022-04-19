@@ -6,7 +6,6 @@ services:
         ports:
             - 3001:3001
         networks:
-            - external
             - postgres
         depends_on:
             - postgres
@@ -33,6 +32,4 @@ services:
             - tools
 
 networks:
-    external:
-        external: true
     postgres: {}
