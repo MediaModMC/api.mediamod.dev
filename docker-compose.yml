@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+    api:
+        container_name: mediamod_api
+        image: api.mediamod.dev:latest
+        ports:
+            - 3001:3001
+        networks:
+            - external
+            - postgres
+        depends_on:
+            - postgres
+    postgres:
+        container_name: mediamod_postgres
+        image: postgres
+        restart: always
+        environment:
+            POSTGRES_USER: mediamod
+            POSTGRES_PASSWORD: super_secret_password
+        networks:
+            - postgres
+        volumes:
+            - ./postgres:/var/lib/postgresql
+    migration:
+        build:
+            context: .
+            dockerfile: Dockerfile.migration
+        networks:
+            - postgres
+        depends_on:
+            - postgres
+        profiles:
+            - tools
+
+networks:
+    external:
+        external: true
+    postgres: {}
