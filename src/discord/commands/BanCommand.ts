@@ -1,6 +1,6 @@
 import { ButtonComponent, Discord, Permission, Slash, SlashOption } from "discordx"
 import { validate } from "uuid"
-import { User } from "@prisma/client"
+import { Theme, User } from "@prisma/client"
 import {
     BaseCommandInteraction,
     ButtonInteraction,
@@ -12,9 +12,11 @@ import {
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
 
+type DatabaseUser = User & { themes: Theme[] }
+
 @Discord()
 export class BanCommand {
-    databaseUsers: Record<string, User> = {}
+    databaseUsers: Record<string, DatabaseUser> = {}
 
     @Slash("ban", { description: "Prevents a user from publishing MediaMod themes." })
     @Permission(false)
@@ -30,9 +32,13 @@ export class BanCommand {
             return await this.failure(interaction, "You must supply a valid UUID!")
         }
 
-        let user: User
+        let user: DatabaseUser
         try {
-            user = await prisma.user.findUnique({ where: { id: uuid }, rejectOnNotFound: true })
+            user = await prisma.user.findUnique({
+                where: { id: uuid },
+                include: { themes: true },
+                rejectOnNotFound: true
+            })
         } catch (e: any) {
             return await this.error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
         }
@@ -49,7 +55,7 @@ export class BanCommand {
 
         await interaction.editReply({
             components: [row],
-            content: `🤔 Please confirm that you would like to ban the user **${user.name}** (\`${user.id}\`)`
+            content: `🤔 Please confirm that you would like to ban the user **${user.name}** (\`${user.id}\`).\nThey have **${user.themes.length} themes** published, these won't be removed.`
         })
     }
 
