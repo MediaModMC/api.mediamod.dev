@@ -1,5 +1,6 @@
 import Fastify, { FastifyInstance } from "fastify"
 import { buildAPIRoutes } from "./routes"
+import logger from "./util/logger"
 import environment from "./util/config"
 import ratelimit from "fastify-rate-limit"
 
@@ -7,7 +8,7 @@ import "reflect-metadata"
 import "./util/prisma"
 import "./discord"
 
-const server: FastifyInstance = Fastify({ logger: true })
+const server: FastifyInstance = Fastify({ logger })
 server.register(ratelimit, {
     global: false,
     errorResponseBuilder: () => ({ ok: false, message: "Please try again later!" })
