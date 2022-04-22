@@ -1,16 +1,24 @@
 import { Client } from "discordx"
-import environment from "../util/config"
 import { dirname, importx } from "@discordx/importer"
+import { Intents, Interaction } from "discord.js"
+
+import environment from "../util/config"
 
 async function init() {
     const client = new Client({
-        intents: [],
+        botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
+        intents: [Intents.FLAGS.GUILDS],
         silent: false
     })
 
     client.on("ready", async () => {
+        await client.guilds.fetch()
         await client.initApplicationCommands()
         await client.initApplicationPermissions()
+    })
+
+    client.on("interactionCreate", (interaction: Interaction) => {
+        client.executeInteraction(interaction)
     })
 
     await importx(dirname(import.meta.url) + "/{events,commands}/**/*.{ts,js}")
