@@ -1,8 +1,11 @@
 import Fastify, { FastifyInstance } from "fastify"
-import { buildAPIRoutes } from "./routes/routes"
+import { buildAPIRoutes } from "./routes"
 import environment from "./util/config"
 import ratelimit from "fastify-rate-limit"
+
+import "reflect-metadata"
 import "./util/prisma"
+import "./discord"
 
 const server: FastifyInstance = Fastify({ logger: true })
 server.register(ratelimit, {

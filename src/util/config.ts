@@ -9,6 +9,9 @@ const environment = {
     port: process.env.PORT as unknown as number,
     database: {
         url: process.env.DATABASE_URL as string
+    },
+    discord: {
+        token: process.env.DISCORD_TOKEN as string
     }
 }
 
