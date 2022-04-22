@@ -5,18 +5,18 @@ import { Intents, Interaction } from "discord.js"
 import environment from "../util/config"
 import logger from "../util/logger"
 
-async function init() {
-    const client = new Client({
-        botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
-        intents: [Intents.FLAGS.GUILDS],
-        logger: {
-            log: (args) => logger.debug(args),
-            info: (args) => logger.info(args),
-            warn: (args) => logger.warn(args),
-            error: (args) => logger.error(args)
-        }
-    })
+export const client = new Client({
+    botGuilds: [(client) => client.guilds.cache.map((guild) => guild.id)],
+    intents: [Intents.FLAGS.GUILDS],
+    logger: {
+        log: (args) => logger.debug(args),
+        info: (args) => logger.info(args),
+        warn: (args) => logger.warn(args),
+        error: (args) => logger.error(args)
+    }
+})
 
+async function init() {
     client.on("ready", async () => {
         await client.guilds.fetch()
         await client.initApplicationCommands()
