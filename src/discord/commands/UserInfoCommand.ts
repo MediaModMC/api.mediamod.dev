@@ -1,10 +1,8 @@
 import { Discord, Permission, Slash, SlashOption } from "discordx"
-import { validate } from "uuid"
 import { Theme, User } from "@prisma/client"
 import { CommandInteraction, MessageEmbed } from "discord.js"
-import { error, failure, lookupUser } from "../util"
+import { DatabaseUserWithThemes, lookupUser, toDiscordTimestamp } from "../util"
 
-import prisma from "../../util/prisma"
 import environment from "../../util/config"
 
 type DatabaseUser = User & { themes: Theme[] }
@@ -24,15 +22,13 @@ export class UserInfoCommand {
         const user = await lookupUser(interaction, uuid)
         if (!user) return
 
-        const latestTheme = user.themes
-            .sort((a, b) => {
-                const dateA = a.upload_date.getTime()
-                const dateB = b.upload_date.getTime()
+        const latestTheme = user.themes.at(0)
+        const embed = this.generateEmbed(user, latestTheme)
+        await interaction.editReply({ embeds: [embed] })
+    }
 
-                return dateA < dateB ? 1 : -1
-            })
-            .at(0)
-
+    private generateEmbed(user: DatabaseUserWithThemes, latestTheme: Theme | undefined): MessageEmbed {
+        const uploadDate = latestTheme?.upload_date
         const embed = new MessageEmbed()
             .setTitle(`Information for ${user.name}`)
             .setThumbnail(`https://crafthead.net/avatar/${user.id}`)
@@ -40,12 +36,8 @@ export class UserInfoCommand {
             .setDescription(`This user has **${user.themes.length} themes** published.`)
             .addField("UUID", `\`${user.id}\``)
             .addField("Banned", user.banned ? "Yes" : "No", true)
-            .addField(
-                "Last theme upload",
-                latestTheme?.upload_date ? `<t:${(latestTheme.upload_date.getTime() / 1000).toFixed(0)}>` : "Never",
-                true
-            )
+            .addField("Last theme upload", uploadDate ? toDiscordTimestamp(uploadDate) : "Never", true)
 
-        await interaction.editReply({ embeds: [embed] })
+        return embed
     }
 }

@@ -9,6 +9,11 @@ import prisma from "../util/prisma"
 export type DatabaseUserWithThemes = User & { themes: Theme[] }
 export type MessageBasedInteraction = ButtonInteraction | BaseCommandInteraction
 
+export function toDiscordTimestamp(date: Date): string {
+    const epoch = (date.getTime() / 1000).toFixed(0)
+    return `<t:${epoch}>`
+}
+
 export async function success(interaction: MessageBasedInteraction, content: string) {
     return await interaction.editReply({ content: `✅ ${content}` })
 }
@@ -36,7 +41,11 @@ export async function lookupUser(
     try {
         return await prisma.user.findUnique({
             where: { id: uuid },
-            include: { themes: true },
+            include: {
+                themes: {
+                    orderBy: { upload_date: "desc" }
+                }
+            },
             rejectOnNotFound: true
         })
     } catch (e: any) {
@@ -70,7 +79,7 @@ export async function notifyThemePublish(theme: Theme & { author: User }) {
         .addField("ID", theme.id, true)
         .addField("User ID", `${theme.author.id}`, false)
         .addField("Username", theme.author.name, true)
-        .addField("Date", `<t:${(theme.upload_date.getTime() / 1000).toFixed(0)}>`, true)
+        .addField("Date", toDiscordTimestamp(theme.upload_date), true)
 
     await channel.send({ embeds: [embed] })
 }
