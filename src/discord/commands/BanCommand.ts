@@ -1,44 +1,29 @@
 import { ButtonComponent, Discord, Permission, Slash, SlashOption } from "discordx"
-import { validate } from "uuid"
-import { PrismaPromise, Theme, User } from "@prisma/client"
+import { PrismaPromise } from "@prisma/client"
 import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js"
-import { error, failure, success } from "../util"
+import { DatabaseUserWithThemes, error, failure, lookupUser, success } from "../util"
 
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
 import logger from "../../util/logger"
 
-type DatabaseUser = User & { themes: Theme[] }
-
 @Discord()
 export class BanCommand {
-    databaseUsers: Record<string, { user: DatabaseUser; destructive: boolean }> = {}
+    databaseUsers: Record<string, { user: DatabaseUserWithThemes; destructive: boolean }> = {}
 
     @Slash("ban", { description: "Prevents a user from publishing MediaMod themes." })
     @Permission(false)
     @Permission({ permission: true, type: "ROLE", id: environment.discord.admin_role })
     async ban(
-        @SlashOption("uuid", { type: "STRING" }) uuid: string | undefined,
-        @SlashOption("destructive", { type: "BOOLEAN" }) destructive: boolean | undefined,
+        @SlashOption("uuid", { type: "STRING" })
+        uuid: string | undefined,
+        @SlashOption("destructive", { type: "BOOLEAN" })
+        destructive: boolean | undefined,
         interaction: CommandInteraction
     ) {
         const message = await interaction.deferReply({ fetchReply: true })
-
-        if (!uuid || !validate(uuid)) {
-            return await failure(interaction, "You must supply a valid UUID!")
-        }
-
-        let user: DatabaseUser
-        try {
-            user = await prisma.user.findUnique({
-                where: { id: uuid },
-                include: { themes: true },
-                rejectOnNotFound: true
-            })
-        } catch (e: any) {
-            logger.error(`Prisma query failed when finding user ${uuid}!`, e)
-            return await error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
-        }
+        const user = await lookupUser(interaction, uuid)
+        if (!user) return
 
         if (user.banned) {
             return await failure(interaction, `The user **${user.name}** (\`${user.id}\`) is already banned!`)
@@ -104,6 +89,7 @@ export class BanCommand {
             interaction,
             `Ban for **${user.name}** (\`${user.id}\`) has been cancelled${destructive ? ` (**Destructive!**)` : ""}`
         )
+
         delete this.databaseUsers[interaction.message.id]
     }
 }

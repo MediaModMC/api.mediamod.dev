@@ -2,7 +2,7 @@ import { ButtonComponent, Discord, Permission, Slash, SlashOption } from "discor
 import { validate } from "uuid"
 import { Theme, User } from "@prisma/client"
 import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js"
-import { error, failure, success } from "../util"
+import { error, failure, lookupUser, success } from "../util"
 
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
@@ -17,25 +17,13 @@ export class UnbanCommand {
     @Permission(false)
     @Permission({ permission: true, type: "ROLE", id: environment.discord.admin_role })
     async unban(
-        @SlashOption("uuid", { type: "STRING" }) uuid: string | undefined,
+        @SlashOption("uuid", { type: "STRING" })
+        uuid: string | undefined,
         interaction: CommandInteraction
     ) {
         const message = await interaction.deferReply({ fetchReply: true })
-
-        if (!uuid || !validate(uuid)) {
-            return await failure(interaction, "You must supply a valid UUID!")
-        }
-
-        let user: DatabaseUser
-        try {
-            user = await prisma.user.findUnique({
-                where: { id: uuid },
-                include: { themes: true },
-                rejectOnNotFound: true
-            })
-        } catch (e: any) {
-            return await error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
-        }
+        const user = await lookupUser(interaction, uuid)
+        if (!user) return
 
         if (!user.banned) {
             return await failure(interaction, `The user **${user.name}** (\`${user.id}\`) is not banned!`)

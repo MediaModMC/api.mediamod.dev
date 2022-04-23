@@ -3,20 +3,48 @@ import { Theme, User } from "@prisma/client"
 import { client } from "./index"
 import config from "../util/config"
 import logger from "../util/logger"
+import { validate } from "uuid"
+import prisma from "../util/prisma"
 
-export async function success(interaction: ButtonInteraction | BaseCommandInteraction, content: string) {
+export type DatabaseUserWithThemes = User & { themes: Theme[] }
+export type MessageBasedInteraction = ButtonInteraction | BaseCommandInteraction
+
+export async function success(interaction: MessageBasedInteraction, content: string) {
     return await interaction.editReply({ content: `✅ ${content}` })
 }
 
-export async function failure(interaction: ButtonInteraction | BaseCommandInteraction, content: string) {
+export async function failure(interaction: MessageBasedInteraction, content: string) {
     return await interaction.editReply({ content: `😢 ${content}` })
 }
 
-export async function error(interaction: ButtonInteraction | BaseCommandInteraction, content: string, e: any) {
+export async function error(interaction: MessageBasedInteraction, content: string, e: any) {
     const formatted = JSON.stringify(e, undefined, 2)
     const json = `\`\`\`json\n${formatted}\`\`\``
 
     await failure(interaction, `${content}:\n${json}`)
+}
+
+export async function lookupUser(
+    interaction: MessageBasedInteraction,
+    uuid: string | undefined
+): Promise<DatabaseUserWithThemes | undefined> {
+    if (!uuid || !validate(uuid)) {
+        await failure(interaction, "You must supply a valid UUID!")
+        return undefined
+    }
+
+    try {
+        return await prisma.user.findUnique({
+            where: { id: uuid },
+            include: { themes: true },
+            rejectOnNotFound: true
+        })
+    } catch (e: any) {
+        logger.error(`Prisma query failed when finding user ${uuid}!`, e)
+        await error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
+
+        return undefined
+    }
 }
 
 export async function notifyThemePublish(theme: Theme & { author: User }) {

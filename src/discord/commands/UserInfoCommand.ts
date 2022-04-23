@@ -2,7 +2,7 @@ import { Discord, Permission, Slash, SlashOption } from "discordx"
 import { validate } from "uuid"
 import { Theme, User } from "@prisma/client"
 import { CommandInteraction, MessageEmbed } from "discord.js"
-import { error, failure } from "../util"
+import { error, failure, lookupUser } from "../util"
 
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
@@ -15,25 +15,14 @@ export class UserInfoCommand {
     @Permission(false)
     @Permission({ permission: true, type: "ROLE", id: environment.discord.admin_role })
     async userinfo(
-        @SlashOption("uuid", { type: "STRING" }) uuid: string | undefined,
+        @SlashOption("uuid", { type: "STRING" })
+        uuid: string | undefined,
         interaction: CommandInteraction
     ) {
         await interaction.deferReply()
 
-        if (!uuid || !validate(uuid)) {
-            return await failure(interaction, "You must supply a valid UUID!")
-        }
-
-        let user: DatabaseUser
-        try {
-            user = await prisma.user.findUnique({
-                where: { id: uuid },
-                include: { themes: true },
-                rejectOnNotFound: true
-            })
-        } catch (e: any) {
-            return await error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
-        }
+        const user = await lookupUser(interaction, uuid)
+        if (!user) return
 
         const latestTheme = user.themes
             .sort((a, b) => {
