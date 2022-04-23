@@ -9,7 +9,7 @@ datasource db {
 
 model ThemeColors {
     themeId                 String @id @map("theme_id")
-    theme                   Theme  @relation(fields: [themeId], references: [id])
+    theme                   Theme  @relation(fields: [themeId], references: [id], onDelete: Cascade)
     background              String
     progress_bar            String
     progress_bar_background String
