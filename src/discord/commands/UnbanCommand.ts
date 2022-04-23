@@ -1,17 +1,15 @@
 import { ButtonComponent, Discord, Permission, Slash, SlashOption } from "discordx"
-import { Theme, User } from "@prisma/client"
 import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js"
 import { error, failure, success } from "../util/message"
 import { lookupUser } from "../util/database"
+import { DatabaseUserWithThemes } from "../util"
 
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
 
-type DatabaseUser = User & { themes: Theme[] }
-
 @Discord()
 export class UnbanCommand {
-    databaseUsers: Record<string, DatabaseUser> = {}
+    databaseUsers: Record<string, DatabaseUserWithThemes> = {}
 
     @Slash("unban", { description: "Allow a user to publish MediaMod themes." })
     @Permission(false)
