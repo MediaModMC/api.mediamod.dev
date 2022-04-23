@@ -1,5 +1,5 @@
 import { FastifyRequest } from "fastify"
-import { refresh } from "../../../../lib/spotify"
+import { refresh } from "../../../../../lib/spotify"
 
 interface AuthQuery {
     refresh_token: string
@@ -12,6 +12,6 @@ export async function spotifyRefreshRoute(request: FastifyRequest<{ Body: AuthQu
     if (result.ok) {
         return result.value
     } else {
-        return { "message": result.error.error_description }
+        return { message: result.error.error_description }
     }
 }

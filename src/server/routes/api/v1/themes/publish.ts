@@ -1,10 +1,12 @@
 import { FastifyRequest } from "fastify"
-import { sessionHasJoined } from "../../../../lib/mojang"
-import { getServerIdHash } from "../../../../lib/hash"
-import { ThemeData } from "../../../../interfaces/ThemeData.interface"
+import { sessionHasJoined } from "../../../../../lib/mojang"
+import { getServerIdHash } from "../../../../../lib/hash"
+import { ThemeData } from "../../../../../interfaces/ThemeData.interface"
 import Filter from "badwords-filter"
-import prisma from "../../../../util/prisma"
+import prisma from "../../../../../util/prisma"
 import { randomBytes } from "crypto"
+import { notifyThemePublish } from "../../../../../discord/util/notify"
+import logger from "../../../../../util/logger"
 
 interface PublishQuery {
     username: string
@@ -45,7 +47,7 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
     }
 
     const id = randomBytes(6).toString("hex")
-    await prisma.theme.create({
+    const theme = await prisma.theme.create({
         data: {
             id: id,
             author: {
@@ -56,8 +58,13 @@ export async function themesPublishRoute(request: FastifyRequest<{ Body: Publish
             },
             name: request.body.theme.name,
             colors: { create: request.body.theme.colors }
-        }
+        },
+        include: { author: true }
     })
+
+    notifyThemePublish(theme)
+        .then(() => logger.info("Successfully notified theme publish!"))
+        .catch((e) => logger.error("Failed to notify theme publish:", e))
 
     return { ok: true, theme_id: id }
 }

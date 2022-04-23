@@ -1,5 +1,5 @@
-import { PrismaClient } from "@prisma/client"
+import Prisma from "@prisma/client"
 import environment from "./config"
 
-const prisma = new PrismaClient({ datasources: { db: { url: environment.database.url } } })
+const prisma = new Prisma.PrismaClient({ datasources: { db: { url: environment.database.url } } })
 export default prisma

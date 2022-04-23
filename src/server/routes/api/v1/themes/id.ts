@@ -1,7 +1,13 @@
-import prisma from "../../../../util/prisma"
+import { FastifyRequest } from "fastify"
+import prisma from "../../../../../util/prisma"
 
-export async function themesListRoute() {
-    const themes = await prisma.theme.findMany({
+type Params = {
+    id: string
+}
+
+export async function themesIdRoute(request: FastifyRequest<{ Params: Params }>) {
+    const theme = await prisma.theme.findFirst({
+        where: { id: request.params.id },
         include: {
             author: {
                 select: {
@@ -21,8 +27,9 @@ export async function themesListRoute() {
         }
     })
 
+    if (!theme) return { ok: false, message: "Unknown theme!" }
     return {
         ok: true,
-        themes: themes
+        theme
     }
 }
