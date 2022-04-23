@@ -5,7 +5,7 @@ import { ThemeData } from "../../../../../interfaces/ThemeData.interface"
 import Filter from "badwords-filter"
 import prisma from "../../../../../util/prisma"
 import { randomBytes } from "crypto"
-import { notifyThemePublish } from "../../../../../discord/util"
+import { notifyThemePublish } from "../../../../../discord/util/notify"
 import logger from "../../../../../util/logger"
 
 interface PublishQuery {

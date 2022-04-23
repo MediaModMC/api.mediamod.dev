@@ -1,11 +1,11 @@
 import { Discord, Permission, Slash, SlashOption } from "discordx"
-import { Theme, User } from "@prisma/client"
+import { Theme } from "@prisma/client"
 import { CommandInteraction, MessageEmbed } from "discord.js"
-import { DatabaseUserWithThemes, lookupUser, toDiscordTimestamp } from "../util"
+import { DatabaseUserWithThemes } from "../util"
+import { lookupUser } from "../util/database"
+import { toDiscordTimestamp } from "../util/formats"
 
 import environment from "../../util/config"
-
-type DatabaseUser = User & { themes: Theme[] }
 
 @Discord()
 export class UserInfoCommand {

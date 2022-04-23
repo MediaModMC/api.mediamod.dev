@@ -1,8 +1,8 @@
 import { ButtonComponent, Discord, Permission, Slash, SlashOption } from "discordx"
-import { validate } from "uuid"
 import { Theme, User } from "@prisma/client"
 import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js"
-import { error, failure, lookupUser, success } from "../util"
+import { error, failure, success } from "../util/message"
+import { lookupUser } from "../util/database"
 
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
