@@ -1,23 +1,25 @@
 import { ButtonComponent, Discord, Permission, Slash, SlashOption } from "discordx"
 import { validate } from "uuid"
-import { Theme, User } from "@prisma/client"
+import { PrismaPromise, Theme, User } from "@prisma/client"
 import { ButtonInteraction, CommandInteraction, MessageActionRow, MessageButton } from "discord.js"
 import { error, failure, success } from "../util"
 
 import prisma from "../../util/prisma"
 import environment from "../../util/config"
+import logger from "../../util/logger"
 
 type DatabaseUser = User & { themes: Theme[] }
 
 @Discord()
 export class BanCommand {
-    databaseUsers: Record<string, DatabaseUser> = {}
+    databaseUsers: Record<string, { user: DatabaseUser; destructive: boolean }> = {}
 
     @Slash("ban", { description: "Prevents a user from publishing MediaMod themes." })
     @Permission(false)
     @Permission({ permission: true, type: "ROLE", id: environment.discord.admin_role })
     async ban(
         @SlashOption("uuid", { type: "STRING" }) uuid: string | undefined,
+        @SlashOption("destructive", { type: "BOOLEAN" }) destructive: boolean | undefined,
         interaction: CommandInteraction
     ) {
         const message = await interaction.deferReply({ fetchReply: true })
@@ -34,6 +36,7 @@ export class BanCommand {
                 rejectOnNotFound: true
             })
         } catch (e: any) {
+            logger.error(`Prisma query failed when finding user ${uuid}!`, e)
             return await error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
         }
 
@@ -41,7 +44,7 @@ export class BanCommand {
             return await failure(interaction, `The user **${user.name}** (\`${user.id}\`) is already banned!`)
         }
 
-        this.databaseUsers[message.id] = user
+        this.databaseUsers[message.id] = { destructive: destructive ?? false, user: user }
         const row = new MessageActionRow().addComponents([
             new MessageButton().setLabel("Confirm").setStyle("DANGER").setCustomId("ban-confirm-button"),
             new MessageButton().setLabel("Cancel").setStyle("SECONDARY").setCustomId("ban-cancel-button")
@@ -49,7 +52,11 @@ export class BanCommand {
 
         await interaction.editReply({
             components: [row],
-            content: `🤔 Please confirm that you would like to ban the user **${user.name}** (\`${user.id}\`).\nThey have **${user.themes.length} themes** published, these won't be removed.`
+            content: `🤔 Please confirm that you would like to ban the user **${user.name}** (\`${
+                user.id
+            }\`).\nThey have **${user.themes.length} themes** published, these ${
+                destructive ? "__**will**__" : "won't"
+            } be removed.`
         })
     }
 
@@ -57,15 +64,27 @@ export class BanCommand {
     async confirmButton(interaction: ButtonInteraction) {
         await interaction.deferReply()
 
-        const user = this.databaseUsers[interaction.message.id]
+        const { user, destructive } = this.databaseUsers[interaction.message.id]
         if (!user) {
             return await failure(interaction, "This interaction has expired!")
         }
 
         try {
-            const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { banned: true } })
-            await success(interaction, `**${updatedUser.name}** (\`${updatedUser.id}\`) has been banned!`)
+            const queries: PrismaPromise<any>[] = [
+                prisma.user.update({ data: { banned: true }, where: { id: user.id } })
+            ]
+
+            if (destructive) {
+                queries.push(prisma.theme.deleteMany({ where: { userId: user.id } }))
+            }
+
+            const [updatedUser] = await prisma.$transaction(queries)
+            await success(
+                interaction,
+                `**${updatedUser.name}** (\`${updatedUser.id}\`) has been banned!${destructive ? " 🔥" : ""}`
+            )
         } catch (e: any) {
+            logger.error(`Prisma transaction failed for ban of user ${user.name} (${user.id}`, e)
             await error(interaction, `Failed to ban user **${user.name}** (\`${user.id}\`)`, e)
         }
 
@@ -76,12 +95,15 @@ export class BanCommand {
     async cancelButton(interaction: ButtonInteraction) {
         await interaction.deferReply()
 
-        const user = this.databaseUsers[interaction.message.id]
+        const { user, destructive } = this.databaseUsers[interaction.message.id]
         if (!user) {
             return await failure(interaction, "This interaction has expired!")
         }
 
-        await success(interaction, `Ban for **${user.name}** (\`${user.id}\`) has been cancelled`)
+        await success(
+            interaction,
+            `Ban for **${user.name}** (\`${user.id}\`) has been cancelled${destructive ? ` (**Destructive!**)` : ""}`
+        )
         delete this.databaseUsers[interaction.message.id]
     }
 }
