@@ -1,5 +1,5 @@
 import { FastifyRequest } from "fastify"
-import prisma from "../../../../util/prisma"
+import prisma from "../../../../../util/prisma"
 
 type Params = {
     uuid: string

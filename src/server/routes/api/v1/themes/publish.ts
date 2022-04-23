@@ -1,12 +1,12 @@
 import { FastifyRequest } from "fastify"
-import { sessionHasJoined } from "../../../../lib/mojang"
-import { getServerIdHash } from "../../../../lib/hash"
-import { ThemeData } from "../../../../interfaces/ThemeData.interface"
+import { sessionHasJoined } from "../../../../../lib/mojang"
+import { getServerIdHash } from "../../../../../lib/hash"
+import { ThemeData } from "../../../../../interfaces/ThemeData.interface"
 import Filter from "badwords-filter"
-import prisma from "../../../../util/prisma"
+import prisma from "../../../../../util/prisma"
 import { randomBytes } from "crypto"
-import { notifyThemePublish } from "../../../../discord/util"
-import logger from "../../../../util/logger"
+import { notifyThemePublish } from "../../../../../discord/util"
+import logger from "../../../../../util/logger"
 
 interface PublishQuery {
     username: string
