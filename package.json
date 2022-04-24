@@ -6,8 +6,10 @@
     "author": "Conor Byrne",
     "license": "UNLICENSED",
     "scripts": {
+        "prebuild": "prisma generate",
         "build": "tsc",
-        "start": "yarn run build && node --experimental-specifier-resolution=node ."
+        "dev": "node --experimental-specifier-resolution=node --loader ts-node/esm ./src/index.ts",
+        "start": "node --experimental-specifier-resolution=node ."
     },
     "devDependencies": {
         "@tsconfig/node16": "^1.0.2",
@@ -17,6 +19,7 @@
         "pino-pretty": "^7.6.1",
         "prettier": "^2.5.1",
         "prettier-plugin-prisma": "^3.12.0",
+        "ts-node": "^10.7.0",
         "typescript": "^4.6.2"
     },
     "dependencies": {

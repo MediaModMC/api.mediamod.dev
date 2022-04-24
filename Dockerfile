@@ -14,11 +14,10 @@ ENV NPM_CONFIG_LOGLEVEL=warn
 
 COPY . ./
 RUN yarn
-RUN yarn prisma generate
 RUN yarn build
 
 COPY --chown=nodejs:nodejs . .
 
 EXPOSE 3000
 
-CMD [ "node", "." ]
+CMD [ "yarn", "start" ]
