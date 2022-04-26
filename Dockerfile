@@ -8,4 +8,5 @@ WORKDIR /usr/src/app
 COPY --chown=node:node . ./
 
 RUN yarn && yarn build
+EXPOSE 3000
 CMD [ "yarn", "start" ]

@@ -11,7 +11,7 @@ server.register(ratelimit, {
     errorResponseBuilder: () => ({ ok: false, message: "Please try again later!" })
 })
 server.register(buildAPIRoutes)
-server.listen(environment.port, "0.0.0.0", async (err) => {
+server.listen(environment.port ?? 3000, "0.0.0.0", async (err) => {
     if (err) {
         console.error(err)
         process.exit(0)
