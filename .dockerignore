@@ -1,2 +1,12 @@
-dist
-node_modules
+**/build/
+**/node_modules/
+**/.idea/
+**/.github/
+**/.git/
+**/.vscode/
+.env
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+Dockerfile.migration
