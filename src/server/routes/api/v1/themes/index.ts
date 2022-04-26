@@ -1,6 +1,6 @@
 import prisma from "../../../../../util/prisma"
 
-export async function themesListRoute() {
+export async function themesIndexRoute() {
     const themes = await prisma.theme.findMany({
         include: {
             author: {
