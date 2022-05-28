@@ -1,5 +1,5 @@
 import { validate } from "uuid"
-import { DatabaseUserWithThemes, MessageBasedInteraction } from "."
+import { DatabaseThemeWithAuthorAndColors, DatabaseUserWithThemes, MessageBasedInteraction } from "."
 import { error, failure } from "./message"
 import logger from "../../util/logger"
 import prisma from "../../util/prisma"
@@ -26,6 +26,42 @@ export async function lookupUser(
     } catch (e: any) {
         logger.error(`Prisma query failed when finding user ${uuid}!`, e)
         await error(interaction, `Error occurred when finding user: \`${uuid}\``, e)
+
+        return undefined
+    }
+}
+
+export async function lookupTheme(
+    interaction: MessageBasedInteraction,
+    themeId: string | undefined
+): Promise<DatabaseThemeWithAuthorAndColors | undefined> {
+    if (!themeId) {
+        await failure(interaction, "You must supply a valid theme id!")
+        return undefined
+    }
+
+    try {
+        const result = await prisma.theme.findUnique({
+            where: { id: themeId },
+            include: {
+                author: true,
+                colors: {
+                    select: {
+                        background: true,
+                        progress_bar: true,
+                        progress_bar_background: true,
+                        progress_bar_text: true,
+                        text: true
+                    }
+                }
+            },
+            rejectOnNotFound: true
+        })
+
+        return result as DatabaseThemeWithAuthorAndColors
+    } catch (e: any) {
+        logger.error(`Prisma query failed when finding theme ${themeId}!`, e)
+        await error(interaction, `Error occurred when finding theme: \`${themeId}\``, e)
 
         return undefined
     }
